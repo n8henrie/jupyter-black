@@ -5,6 +5,7 @@ Tests for `jupyter_black` module.
 
 import json
 import os
+import socket
 import subprocess
 import sys
 import typing as t
@@ -12,31 +13,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
-from playwright.sync_api import sync_playwright
+from _pytest.fixtures import SubRequest
+from playwright.sync_api import Response, sync_playwright, WebSocket
 
-PORT = 8744
-
-
-@pytest.fixture(scope="module")
-def jupyter() -> t.Sequence[str]:
-    """Fixture to run the code in a notebook."""
-    with TemporaryDirectory() as tmp:
-        os.chdir(tmp)
-        proc = subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "jupyter",
-                "notebook",
-                f"--port={PORT}",
-                "--no-browser",
-                "--NotebookApp.token=''",
-                "--NotebookApp.password=''",
-            ]
-        )
-        yield tmp
-    proc.terminate()
-
+# Use different port for 3.7 vs 3.8 to allow parallel tox runs
+PORT = sys.version_info[1] + 52750
 
 null = None
 notebook = {
@@ -111,9 +92,87 @@ notebook = {
 }
 
 
-def all_cells_run(event):
+@pytest.fixture(scope="module")
+def jupyter_output(request: SubRequest) -> t.Sequence[str]:
+    """Fixture to run a notebook via Playwright.
+
+    Seems like an actual browser is required for the JS to run, but headless
+    Playwright seems to be working.
+
+    I think this could be modularized to test both lab and notebook, but
+    currently have only spend the time to get it working for notebooks.
+    """
+    with TemporaryDirectory() as tmp, sync_playwright() as p:
+        os.chdir(tmp)
+        proc = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "jupyter",
+                "server",
+                f"--ServerApp.port={PORT}",
+                "--ServerApp.token=''",
+                "--ServerApp.password=''",
+                "--no-browser",
+            ]
+        )
+
+        def term() -> None:
+            proc.terminate()
+            proc.wait(timeout=20)
+
+        request.addfinalizer(term)
+
+        # Wait for jupyter server to be ready
+        while True:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                    sock.connect(("localhost", PORT))
+            except (ConnectionRefusedError, OSError):
+                continue
+            else:
+                break
+
+        nb = Path(tmp) / "notebook.ipynb"
+        nb.write_text(json.dumps(notebook))
+
+        browser = p.firefox.launch(headless=True)
+        context = browser.new_context()
+        page = context.new_page()
+
+        with page.expect_websocket(kernel_ready) as ws_info:
+            page.goto(
+                f"http://localhost:{PORT}/notebooks/notebook.ipynb",
+                wait_until="networkidle",
+            )
+        ws = ws_info.value
+
+        page.click("#celllink")
+        with ws.expect_event("framereceived", all_cells_run):
+            page.click("text=Run All")
+
+        with page.expect_response(is_saved) as resp:
+            page.click('button[title="Save and Checkpoint"]')
+
+        page.click("#kernellink")
+        page.click("text=Shutdown")
+        with page.expect_response(is_closing) as resp:
+            page.click('button:has-text("Shutdown")')
+
+        if resp.value.finished() is None:
+            browser.close()
+
+        output = json.loads(nb.read_text())
+    return output
+
+
+def all_cells_run(event_str: str) -> bool:
+    """Wait for an event signalling all cells have run.
+
+    `execution_count` should equal number of nonempty cells.
+    """
     try:
-        event = json.loads(event)
+        event = json.loads(event_str)
         msg_type = event["msg_type"]
         content = event["content"]
         execution_count = content["execution_count"]
@@ -122,7 +181,9 @@ def all_cells_run(event):
         return False
 
     # Blank cells do not increment execution_count
-    expected_count = sum(1 for cell in notebook["cells"] if cell["source"])
+    expected_count: int = sum(
+        1 for cell in notebook["cells"] if cell["source"]  # type: ignore
+    )
     return all(
         (
             msg_type == "execute_reply",
@@ -132,29 +193,54 @@ def all_cells_run(event):
     )
 
 
-def is_saved(response):
-    expected_url = (
-        f"http://localhost:{PORT}/api/contents/notebook.ipynb/checkpoints"
-    )
-    id_ = response.json().get("id")
+def is_closing(response: Response) -> bool:
+    """Wait for the response showing that the kernel is shutting down."""
+    expected_url = f"http://localhost:{PORT}/api/sessions/"
+    method = response.request.method
+    status_text = response.status_text
+
     return all(
         (
-            response.url == expected_url,
-            id_ == "checkpoint",
+            response.url.startswith(expected_url),
+            method == "DELETE",
+            status_text == "No Content",
             response.finished() is None,
         )
     )
 
 
-def source_from_cell(content, id):
-    return next(
-        cell.get("source") for cell in content["cells"] if cell["id"] == id
+def is_saved(response: Response) -> bool:
+    """Wait for the response showing that saving has taken place."""
+    expected_url = f"http://localhost:{PORT}/api/contents/notebook.ipynb"
+    method = response.request.method
+    t = response.json().get("type")
+    return all(
+        (
+            response.url == expected_url,
+            t == "notebook",
+            method == "PUT",
+            response.finished() is None,
+        )
     )
 
 
-def kernel_ready(event):
+def source_from_cell(content: t.Dict[str, t.Any], cell_id: str) -> str:
+    """Return cell source for a given id."""
+    return next(
+        cell.get("source")
+        for cell in content["cells"]
+        if cell["id"] == cell_id
+    )
+
+
+def kernel_ready_event(event_str: str) -> bool:
+    """Wait for an event signalling the kernel is ready to run cell.
+
+    Seems like `comm_info_reply` is a reasonable target for `jupyter notebook`
+    whereas `kernel_info_reply` works for `jupyter server`.
+    """
     try:
-        event = json.loads(event)
+        event = json.loads(event_str)
         msg_type = event["msg_type"]
         content = event["content"]
         status = content["status"]
@@ -163,45 +249,22 @@ def kernel_ready(event):
 
     return all(
         (
-            msg_type == "comm_info_reply",
+            msg_type == "kernel_info_reply",
             status == "ok",
         )
     )
 
 
-def test_jupyter_black(jupyter):
+def kernel_ready(ws: WebSocket) -> bool:
+    """Wait for the kernel_ready_event on a websocket."""
+    with ws.expect_event("framereceived", kernel_ready_event):
+        return True
+
+
+def test_jupyter_black(jupyter_output: t.Dict[str, t.Any]) -> None:
     """Test converting a notebook."""
-    nb = Path(jupyter) / "notebook.ipynb"
-    nb.write_text(json.dumps(notebook))
-
-    assert json.loads(nb.read_text()) == notebook
-    with sync_playwright() as p:
-        browser = p.firefox.launch(headless=True)
-        page = browser.new_page()
-
-        with page.expect_websocket() as ws_info:
-            page.goto(
-                f"http://localhost:{PORT}/notebooks/notebook.ipynb",
-                wait_until="load",
-            )
-
-        ws = ws_info.value
-        ws.wait_for_event("framereceived", kernel_ready)
-
-        with ws.expect_event("framereceived", all_cells_run):
-            page.click("#celllink")
-            page.click("text=Run All")
-
-        with page.expect_response(is_saved) as resp:
-            page.click('button[title="Save and Checkpoint"]')
-
-        if resp.value.finished():
-            browser.close()
-
-    output = json.loads(nb.read_text())
-
-    fix_quotes = source_from_cell(output, "25a6901f")
+    fix_quotes = source_from_cell(jupyter_output, "25a6901f")
     assert fix_quotes[-1] == 'print("foo")'
 
-    fix_quotes_with_magic = source_from_cell(output, "25a6801f")
+    fix_quotes_with_magic = source_from_cell(jupyter_output, "25a6801f")
     assert fix_quotes_with_magic[-1] == 'print("foo")'
