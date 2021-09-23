@@ -5,11 +5,14 @@ import typing as t
 
 import black
 from IPython.core import getipython
+from IPython.core.interactiveshell import ExecutionInfo
 from IPython.display import display, HTML, Javascript
 from IPython.terminal.interactiveshell import TerminalInteractiveShell as Ipt
 
 logging.basicConfig()
 LOGGER = logging.getLogger("jupyter_black")
+
+formatter = None
 
 
 class BlackFormatter:
@@ -24,17 +27,16 @@ class BlackFormatter:
         """Initialize the class with the passed in config.
 
         Notes on the JavaScript stuff for notebook:
-            Requires:
+            - Requires:
                 - update=False for the `html` part
-                - setTimeout
-                - for loop (`.find` doesn't work)
-
-                Doesn't seem to matter:
-                - raw vs HTML/Javascript wrapper
+            - Doesn't seem to matter:
                 - trailing semicolon
+            - Other:
+                - Can use `jb_cells.find` instead of the for loop if you set
+                  the main function to `text/html` and set `raw=True`
 
-        def display:
-            https://github.com/ipython/ipython/blob/77e188547e5705a0e960551519a851ac45db8bfc/IPython/core/display_functions.py#L88  # noqa
+            def display:
+                https://github.com/ipython/ipython/blob/77e188547e5705a0e960551519a851ac45db8bfc/IPython/core/display_functions.py#L88  # noqa
 
         Arguments:
             ip: ipython shell
@@ -58,30 +60,26 @@ class BlackFormatter:
         config.update(black_config)
 
         LOGGER.debug(f"config: {config}")
-        self.mode = black.Mode(**config)
+        mode = black.Mode(**config)
+        mode.is_ipynb = True
+        self.mode = mode
 
         self.is_lab = is_lab
         if not is_lab:
             js_func = """
                 <script type="application/javascript" id="jupyter_black">
                 function jb_set_cell(
-                        jb_cell_id,
-                        jb_unformatted_code,
                         jb_formatted_code
                         ) {
-                    var jb_cells = Jupyter.notebook.get_cells()
-                    for (var i = 0; i < jb_cells.length; ++i) {
-                        var cell = jb_cells[i]
-                        if (cell.input_prompt_number == jb_cell_id) {
-                            if (cell.get_text() == jb_unformatted_code) {
-                                cell.set_text(jb_formatted_code)
-                            }
-                            break
+                    for (var cell of Jupyter.notebook.get_cells()) {
+                        if (cell.input_prompt_number == "*") {
+                            cell.set_text(jb_formatted_code)
+                            return
                         }
                     }
                 }
                 </script>
-            """
+                """
             display(
                 HTML(js_func),
                 display_id="jupyter_black",
@@ -96,55 +94,35 @@ class BlackFormatter:
             return black.parse_pyproject_toml(toml_config)
         return {}
 
-    def _set_cell(
-        self, unformatted_cell: str, cell: str, cell_num: int
-    ) -> None:
+    def _set_cell(self, cell_content: str) -> None:
         if self.is_lab:
-            self.shell.set_next_input(cell, replace=True)
+            self.shell.set_next_input(cell_content, replace=True)
         else:
-            # I think this requires setTimeout so that the line number e.g.
-            # `In [5]:` is set, which is used to locate the cell in JavaScript.
-            #
-            # Easier to use % formatting than deal with escaping all the `{`s
-            # for f-strings or `.format`
-            js_code = """
-            setTimeout(function() {
-                jb_set_cell(%d, %s, %s)
-            }, 10)
-            """ % (
-                cell_num,
-                json.dumps(unformatted_cell),
-                json.dumps(cell),
-            )
+            js_code = f"""
+            (function() {{
+                jb_set_cell({json.dumps(cell_content)})
+            }})();
+            """
             display(
                 Javascript(js_code), display_id="jupyter_black", update=True
             )
 
-    def _format_cell(self) -> None:
+    def _format_cell(self, cell_info: ExecutionInfo) -> None:
+        cell_content = str(cell_info.raw_cell)
+
         try:
-            cell_num = len(self.shell.user_ns["In"]) - 1
-            if cell_num > 0:
-                unformatted_cell: str = self.shell.user_ns[f"_i{cell_num}"]
+            # `fast=False` seems to make *at most* a few ns difference even on
+            # medium size cells and seems to help ensure correctness
+            formatted_code = black.format_cell(
+                cell_content, mode=self.mode, fast=False
+            )
+        except black.NothingChanged:
+            return
+        except Exception as e:
+            LOGGER.debug(e)
+            return
 
-                if unformatted_cell.strip().find("%load") == 0:
-                    return
-
-                try:
-                    formatted_code = black.format_cell(
-                        unformatted_cell, mode=self.mode, fast=False
-                    )
-                except black.NothingChanged:
-                    return
-
-                self._set_cell(
-                    unformatted_cell, formatted_code.strip(), cell_num
-                )
-
-        except (ValueError, TypeError, AssertionError) as e:
-            LOGGER.exception(e)
-
-
-formatter = None
+        self._set_cell(formatted_code)
 
 
 def _test_is_lab() -> None:
@@ -222,7 +200,7 @@ def load(
 
     if formatter is None:
         formatter = BlackFormatter(ip, is_lab=lab, black_config=black_config)
-        ip.events.register("post_run_cell", formatter._format_cell)
+        ip.events.register("pre_run_cell", formatter._format_cell)
 
 
 def unload_ipython_extension(ip: Ipt) -> None:
