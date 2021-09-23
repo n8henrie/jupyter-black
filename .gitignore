@@ -54,3 +54,4 @@ jupyter-black.cfg
 .cache/
 .mypy_cache/
 /.ipynb_checkpoints
+*.ipynb
