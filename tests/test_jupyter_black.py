@@ -135,16 +135,18 @@ def jupyter_output(request: SubRequest) -> t.Sequence[str]:
 
         nb = Path(tmp) / "notebook.ipynb"
         nb.write_text(json.dumps(notebook))
+        url_base = f"http://localhost:{PORT}"
 
         browser = p.firefox.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()
 
+        with page.expect_response(
+            lambda resp: "A Jupyter Server is running." in resp.text()
+        ):
+            page.goto(f"{url_base}")
         with page.expect_websocket(kernel_ready) as ws_info:
-            page.goto(
-                f"http://localhost:{PORT}/notebooks/notebook.ipynb",
-                wait_until="networkidle",
-            )
+            page.goto(f"{url_base}/notebooks/notebook.ipynb")
         ws = ws_info.value
 
         page.click("#celllink")
