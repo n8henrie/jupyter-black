@@ -111,7 +111,7 @@ Contribution ideas:
     - Ensure that `pyproject.toml` is searched for properly
 - [ ] Write tests for jupyter lab, currently only tested for notebook
     - I think the fixture could easily be modularized to also work for `lab`,
-      but haven't done the work yet.
+      but haven't done the work yet
 
 ## Contributing
 
