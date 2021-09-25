@@ -138,6 +138,14 @@ the original version!
 
 And of course many thanks to the [black][black] and [jupyter][jupyter] teams.
 
+Also, after establishing the repo and reserving the name on PyPI, I noticed
+there is another library of the same name:
+[drillan/jupyter-black](https://github.com/drillan/jupyter-black). It looks
+like there have been no commits in the last 2 years, and it was never put in
+PyPI, so I think at this point I'll continue with this name. Sorry if this
+causes any trouble or confusion. I'll note that @drillan's library probably
+does things the *right* way by installing as an `nbextension`.
+
 ## Buy Me a Coffee
 
 [☕️](https://n8henrie.com/donate)
