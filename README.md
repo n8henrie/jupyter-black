@@ -96,10 +96,10 @@ $ ./.venv/bin/python -m pip install -e .[test,dev]
 Notes:
 
 - Tests use [playwright][playwright]
-    - You'll need to run these commands to run the tests:
-        - `python -m playwright install firefox`
-        - `python -m playwright install-deps firefox`
-- `tox` will automatically run these installation steps (helpful for CI).
+- You'll need to run this command (once) prior to running the tests:
+    - `python -m playwright install --with-deps firefox`
+- `tox` will automatically run these installation steps (helpful for CI)
+- If desired, pass the `--no-headless` flag to `pytest` for local debugging
 
 ## TODO
 
@@ -109,8 +109,8 @@ Contribution ideas:
     - Ensure config is overridden in unsurprising ways
     - Ensure other config options are properly passed to `black`
     - Ensure that `pyproject.toml` is searched for properly
-- [ ] Write tests for jupyter lab, currently only tested for notebook
-    - I think the fixture could easily be modularized to also work for `lab`,
+- [x] Write tests for jupyter lab, currently only tested for notebook
+    - [x] I think the fixture could easily be modularized to also work for `lab`,
       but haven't done the work yet
 
 ## Contributing
