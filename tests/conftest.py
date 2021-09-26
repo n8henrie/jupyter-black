@@ -14,13 +14,9 @@ import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
 from _pytest.fixtures import SubRequest
-from playwright.sync_api import (
-    Browser,
-    BrowserContext,
-    Response,
-    sync_playwright,
-    WebSocket,
-)
+from playwright.sync_api import Browser, BrowserContext
+from playwright.sync_api import Error as PWError
+from playwright.sync_api import Response, sync_playwright, WebSocket
 from pytest import TempPathFactory
 
 
@@ -392,7 +388,12 @@ def jupyter_lab(
     url_base = f"http://localhost:{port}/lab"
 
     while page.title() != "JupyterLab":
-        page.goto(url_base)
+        try:
+            page.goto(url_base)
+        except PWError as e:
+            print(e)
+            page.reload()
+
     page.close()
 
     yield (context, tmp, port)
