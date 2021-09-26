@@ -14,13 +14,9 @@ import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
 from _pytest.fixtures import SubRequest
-from playwright.sync_api import (
-    Browser,
-    BrowserContext,
-    Response,
-    sync_playwright,
-    WebSocket,
-)
+from playwright.sync_api import Browser, BrowserContext
+from playwright.sync_api import Error as PWError
+from playwright.sync_api import Response, sync_playwright, WebSocket
 from pytest import TempPathFactory
 
 
@@ -338,11 +334,13 @@ def jupyter_server(
     context = browser.new_context()
     page = context.new_page()
 
-    url_base = f"http://localhost:{port}"
-    with page.expect_response(
-        lambda resp: "A Jupyter Server is running." in resp.text()
-    ):
-        page.goto(url_base)
+    url_base = f"http://localhost:{port}/tree"
+    while page.title() != "Home Page - Select or create a notebook":
+        try:
+            page.goto(url_base, wait_until="networkidle")
+        except PWError as e:
+            print(e)
+            print("page title: ", page.title())
     page.close()
 
     yield (context, tmp, port)
@@ -392,9 +390,12 @@ def jupyter_lab(
     page = context.new_page()
 
     url_base = f"http://localhost:{port}/lab"
-
     while page.title() != "JupyterLab":
-        page.goto(url_base)
+        try:
+            page.goto(url_base, wait_until="networkidle")
+        except PWError as e:
+            print(e)
+            print("page title: ", page.title())
     page.close()
 
     yield (context, tmp, port)
