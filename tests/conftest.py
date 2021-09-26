@@ -336,10 +336,10 @@ def jupyter_server(
     url_base = f"http://localhost:{port}/tree"
     while page.title() != "Home Page - Select or create a notebook":
         try:
-            page.goto(url_base)
+            page.goto(url_base, wait_until="networkidle")
         except PWError as e:
             print(e)
-            page.reload(wait_until="networkidle")
+            print("page title: ", page.title())
     page.close()
 
     yield (context, tmp, port)
@@ -388,13 +388,12 @@ def jupyter_lab(
     page = context.new_page()
 
     url_base = f"http://localhost:{port}/lab"
-
     while page.title() != "JupyterLab":
         try:
-            page.goto(url_base)
+            page.goto(url_base, wait_until="networkidle")
         except PWError as e:
             print(e)
-            page.reload(wait_until="networkidle")
+            print("page title: ", page.title())
     page.close()
 
     yield (context, tmp, port)
