@@ -387,6 +387,14 @@ def jupyter_lab(
             break
 
     context = browser.new_context()
+    page = context.new_page()
+
+    url_base = f"http://localhost:{port}/lab"
+
+    while page.title() != "JupyterLab":
+        page.goto(url_base)
+    page.close()
+
     yield (context, tmp, port)
     context.close()
     proc.terminate()
