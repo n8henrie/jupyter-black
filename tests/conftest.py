@@ -333,11 +333,13 @@ def jupyter_server(
     context = browser.new_context()
     page = context.new_page()
 
-    url_base = f"http://localhost:{port}"
-    with page.expect_response(
-        lambda resp: "A Jupyter Server is running." in resp.text()
-    ):
-        page.goto(url_base)
+    url_base = f"http://localhost:{port}/tree"
+    while page.title() != "Home Page - Select or create a notebook":
+        try:
+            page.goto(url_base)
+        except PWError as e:
+            print(e)
+            page.reload()
     page.close()
 
     yield (context, tmp, port)
