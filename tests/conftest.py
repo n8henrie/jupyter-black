@@ -339,7 +339,7 @@ def jupyter_server(
             page.goto(url_base)
         except PWError as e:
             print(e)
-            page.reload()
+            page.reload(wait_until="networkidle")
     page.close()
 
     yield (context, tmp, port)
@@ -394,8 +394,7 @@ def jupyter_lab(
             page.goto(url_base)
         except PWError as e:
             print(e)
-            page.reload()
-
+            page.reload(wait_until="networkidle")
     page.close()
 
     yield (context, tmp, port)
