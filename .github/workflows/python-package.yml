@@ -32,4 +32,4 @@ jobs:
       - name: Install tox
         run: python -m pip install tox
       - name: Run tox
-        run: python -m tox -e py,lint
+        run: python -m tox --parallel -e py,lint
