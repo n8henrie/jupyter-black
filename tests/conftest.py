@@ -341,7 +341,7 @@ def jupyter_server(
     with page.expect_response(
         lambda resp: "A Jupyter Server is running." in resp.text()
     ):
-        page.goto(f"{url_base}")
+        page.goto(url_base)
     page.close()
 
     yield (context, tmp, port)
