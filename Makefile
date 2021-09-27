@@ -32,7 +32,7 @@ lint:
 
 .PHONY: test
 test:
-	./.venv/bin/python -m tox -e py
+	./.venv/bin/python -m pytest -s
 
 .PHONY: test-all
 test-all:
@@ -67,4 +67,4 @@ update-deps: requirements.txt
 
 .PHONY: test-debug
 test-debug:
-	DEBUG=pw:api PWDEVBUG=console ./.venv/bin/python -m pytest -s
+	DEBUG=pw:api PWDEBUG=console ./.venv/bin/python -m pytest -s -v --no-headless
