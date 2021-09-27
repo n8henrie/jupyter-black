@@ -26,19 +26,19 @@ clean-pyc:
 clean-test:
 	rm -fr .tox/
 
-.PHONY: lint .venv
+.PHONY: lint
 lint:
 	./.venv/bin/python -m tox -e lint
 
-.PHONY: test .venv
+.PHONY: test
 test:
 	./.venv/bin/python -m tox -e py
 
-.PHONY: test-all .venv
+.PHONY: test-all
 test-all:
 	./.venv/bin/python -m tox --parallel
 
-.PHONY: release .venv
+.PHONY: release
 release: dist
 	./.venv/bin/python -m twine upload dist/*
 
@@ -50,7 +50,7 @@ dist: src/**/*.py pyproject.toml setup.cfg .venv
 	python3 -m venv .venv
 	./.venv/bin/python -m pip install --upgrade pip
 
-.PHONY: update-deps .venv
+.PHONY: update-deps
 update-deps: requirements.txt
 	@$(GREP) --invert-match --no-filename '^#' requirements*.txt | \
 		$(SED) 's|==.*$$||g' | \
@@ -65,6 +65,6 @@ update-deps: requirements.txt
 		done; \
 	done;
 
-.PHONY: test-debug .venv
+.PHONY: test-debug
 test-debug:
 	DEBUG=pw:api PWDEVBUG=console ./.venv/bin/python -m pytest -s
