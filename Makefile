@@ -32,10 +32,12 @@ lint:
 
 .PHONY: test
 test:
+	-pkill -f jupyter-black/.venv/bin/python
 	./.venv/bin/python -m pytest -s
 
 .PHONY: test-all
 test-all:
+	-pkill -f jupyter-black/.venv/bin/python
 	./.venv/bin/python -m tox --parallel
 
 .PHONY: release
