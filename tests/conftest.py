@@ -13,10 +13,15 @@ from uuid import uuid4
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
-from _pytest.fixtures import SubRequest
-from playwright.sync_api import Browser, BrowserContext
-from playwright.sync_api import Error as PWError
-from playwright.sync_api import Response, sync_playwright, WebSocket
+from playwright.sync_api import (
+    Browser,
+    BrowserContext,
+    Error,
+    Response,
+    sync_playwright,
+    TimeoutError,
+    WebSocket,
+)
 from pytest import TempPathFactory
 
 
@@ -290,6 +295,43 @@ def browser(headless: bool) -> t.Generator:
         browser.close()
 
 
+def _wait_for_server(browser: Browser, port: int) -> None:
+    # Wait for jupyter server to be ready
+    while True:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(("localhost", port))
+        except (ConnectionRefusedError, OSError):
+            continue
+        else:
+            break
+
+    err = None
+    for _ in range(20):
+        page = browser.new_page()
+        try:
+            with page.expect_response(
+                lambda resp: resp.json().get("version") is not None,
+                timeout=500,
+            ):
+                page.goto(f"http://localhost:{port}/api")
+        except TimeoutError:
+            continue
+        except Error as e:
+            err = e
+            if not e.message.startswith("NS_ERROR_CONNECTION_REFUSED"):
+                raise
+            continue
+        else:
+            return
+        finally:
+            page.close()
+    else:
+        if err:
+            raise err
+        raise Exception("Unable to get the server started")
+
+
 @pytest.fixture(scope="module")
 def jupyter_server(
     browser: Browser,
@@ -321,27 +363,11 @@ def jupyter_server(
         ]
     )
 
-    # Wait for jupyter server to be ready
-    while True:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(("localhost", port))
-        except (ConnectionRefusedError, OSError):
-            continue
-        else:
-            break
-
+    _wait_for_server(
+        browser,
+        port=port,
+    )
     context = browser.new_context()
-    page = context.new_page()
-
-    url_base = f"http://localhost:{port}/tree"
-    while page.title() != "Home Page - Select or create a notebook":
-        try:
-            page.goto(url_base, wait_until="networkidle")
-        except PWError as e:
-            print(e)
-            print("page title: ", page.title())
-    page.close()
 
     yield (context, tmp, port)
     context.close()
@@ -376,27 +402,11 @@ def jupyter_lab(
         ]
     )
 
-    # Wait for jupyter server to be ready
-    while True:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(("localhost", port))
-        except (ConnectionRefusedError, OSError):
-            continue
-        else:
-            break
-
+    _wait_for_server(
+        browser,
+        port=port,
+    )
     context = browser.new_context()
-    page = context.new_page()
-
-    url_base = f"http://localhost:{port}/lab"
-    while page.title() != "JupyterLab":
-        try:
-            page.goto(url_base, wait_until="networkidle")
-        except PWError as e:
-            print(e)
-            print("page title: ", page.title())
-    page.close()
 
     yield (context, tmp, port)
     context.close()
