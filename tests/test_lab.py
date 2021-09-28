@@ -6,7 +6,7 @@ from conftest import source_from_cell
 
 
 def test_lab(lab: t.Callable) -> None:
-    """Empty cells shouldn't break thinks."""
+    """Empty cells shouldn't break things."""
     cells = [
         {
             "source": ["import jupyter_black"],
