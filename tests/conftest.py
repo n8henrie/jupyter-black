@@ -336,16 +336,14 @@ def _wait_for_server(browser: Browser, port: int) -> None:
 def jupyter_server(
     browser: Browser,
     tmp_path_factory: TempPathFactory,
+    open_port: int,
 ) -> t.Generator:
     """Fixture to run a notebook via Playwright.
 
     Seems like an actual browser is required for the JS to run, but headless
     Playwright seems to be working.
     """
-    # Use different port for 3.7 vs 3.8  and lab vs notebook to allow parallel
-    # tox runs
-    port = sys.version_info[1] + 52750
-
+    port = open_port
     tmp = tmp_path_factory.getbasetemp()
     os.chdir(tmp)
     proc = subprocess.Popen(
@@ -356,6 +354,7 @@ def jupyter_server(
             "server",
             "--ServerApp.config_file=/dev/null",
             f"--ServerApp.port={port}",
+            "--ServerApp.port_retries=0",
             "--ServerApp.token=''",
             "--ServerApp.password=''",
             "--no-browser",
@@ -375,15 +374,22 @@ def jupyter_server(
 
 
 @pytest.fixture(scope="module")
+def open_port() -> int:
+    """Find an open port."""
+    with socket.socket() as s:
+        s.bind(("", 0))
+        port = s.getsockname()[1]
+    return port
+
+
+@pytest.fixture(scope="module")
 def jupyter_lab(
     browser: Browser,
     tmp_path_factory: TempPathFactory,
+    open_port: int,
 ) -> t.Generator:
     """Fixture to run a notebook in jupyterlab via Playwright."""
-    # Use different port for 3.7 vs 3.8  and lab vs notebook to allow parallel
-    # tox runs
-    port = sys.version_info[1] + 52740
-
+    port = open_port
     tmp = tmp_path_factory.getbasetemp()
     os.chdir(tmp)
     proc = subprocess.Popen(
@@ -394,6 +400,7 @@ def jupyter_lab(
             "lab",
             "--ServerApp.config_file=/dev/null",
             f"--ServerApp.port={port}",
+            "--ServerApp.port_retries=0",
             "--ServerApp.token=''",
             "--ServerApp.password=''",
             "--no-browser",
