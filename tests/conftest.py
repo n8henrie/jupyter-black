@@ -13,6 +13,7 @@ from uuid import uuid4
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+from _pytest.fixtures import SubRequest
 from playwright.sync_api import (
     Browser,
     BrowserContext,
@@ -334,10 +335,11 @@ def _wait_for_server(browser: Browser, port: int) -> None:
 
 @pytest.fixture(scope="module")
 def jupyter_server(
+    request: SubRequest,
     browser: Browser,
     tmp_path_factory: TempPathFactory,
     open_port: int,
-) -> t.Generator:
+) -> t.Tuple[BrowserContext, Path, int]:
     """Fixture to run a notebook via Playwright.
 
     Seems like an actual browser is required for the JS to run, but headless
@@ -360,17 +362,20 @@ def jupyter_server(
             "--no-browser",
         ]
     )
+    context = browser.new_context()
+
+    def teardown():
+        context.close()
+        proc.terminate()
+        proc.wait(timeout=5)
+
+    request.addfinalizer(teardown)
 
     _wait_for_server(
         browser,
         port=port,
     )
-    context = browser.new_context()
-
-    yield (context, tmp, port)
-    context.close()
-    proc.terminate()
-    proc.wait(timeout=5)
+    return (context, tmp, port)
 
 
 @pytest.fixture(scope="module")
@@ -384,10 +389,11 @@ def open_port() -> int:
 
 @pytest.fixture(scope="module")
 def jupyter_lab(
+    request: SubRequest,
     browser: Browser,
     tmp_path_factory: TempPathFactory,
     open_port: int,
-) -> t.Generator:
+) -> t.Tuple[BrowserContext, Path, int]:
     """Fixture to run a notebook in jupyterlab via Playwright."""
     port = open_port
     tmp = tmp_path_factory.getbasetemp()
@@ -406,17 +412,21 @@ def jupyter_lab(
             "--no-browser",
         ]
     )
+    context = browser.new_context()
+
+    def teardown():
+        context.close()
+        proc.terminate()
+        proc.wait(timeout=5)
+
+    request.addfinalizer(teardown)
 
     _wait_for_server(
         browser,
         port=port,
     )
-    context = browser.new_context()
 
-    yield (context, tmp, port)
-    context.close()
-    proc.terminate()
-    proc.wait(timeout=5)
+    return (context, tmp, port)
 
 
 def source_from_cell(content: t.Dict[str, t.Any], cell_id: str) -> str:
