@@ -200,7 +200,7 @@ def load(
 
     if formatter is None:
         formatter = BlackFormatter(ip, is_lab=lab, black_config=black_config)
-        ip.events.register("pre_run_cell", formatter._format_cell)
+    ip.events.register("pre_run_cell", formatter._format_cell)
 
 
 def unload_ipython_extension(ip: Ipt) -> None:
@@ -210,5 +210,5 @@ def unload_ipython_extension(ip: Ipt) -> None:
     """
     global formatter
     if formatter:
-        ip.events.unregister("post_run_cell", formatter._format_cell)
+        ip.events.unregister("pre_run_cell", formatter._format_cell)
         formatter = None
