@@ -18,8 +18,11 @@ Enhancements compared to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_bl
 
 - Configurability:
     - Try to read black config from `pyproject.toml` if available
-    - Override settings such as line length and black.TargetVersion if desired
-
+    - Override settings such as line length and `black.TargetVersion` if
+      desired
+- Uses `black.format_cell` to greatly simplify the codebase
+- Adds tests
+- Slightly more responsive (no longer requires `setTimeout` and a delay)
 - Free software: MIT
 
 ## Introduction
