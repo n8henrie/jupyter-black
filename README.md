@@ -12,7 +12,7 @@ modifications:
 ## Features
 
 Once loaded, automatically format syntactically correct `jupyter` cells with
-`black` once then are run.
+`black` once they are run.
 
 Enhancements compared to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black):
 
