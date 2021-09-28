@@ -72,9 +72,6 @@ def test_lab_loadext_fails(lab: t.Callable) -> None:
             "source": ["%load_ext jupyter_black"],
         },
         {
-            "source": [],
-        },
-        {
             "id": "singlequotes",
             "source": ["print('foo')"],
         },
