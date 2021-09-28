@@ -335,7 +335,6 @@ def _wait_for_server(browser: Browser, port: int) -> None:
 @pytest.fixture(scope="module")
 def jupyter_server(
     browser: Browser,
-    request: SubRequest,
     tmp_path_factory: TempPathFactory,
 ) -> t.Generator:
     """Fixture to run a notebook via Playwright.
@@ -378,7 +377,6 @@ def jupyter_server(
 @pytest.fixture(scope="module")
 def jupyter_lab(
     browser: Browser,
-    request: SubRequest,
     tmp_path_factory: TempPathFactory,
 ) -> t.Generator:
     """Fixture to run a notebook in jupyterlab via Playwright."""
