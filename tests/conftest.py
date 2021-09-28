@@ -364,7 +364,7 @@ def jupyter_server(
     )
     context = browser.new_context()
 
-    def teardown():
+    def teardown() -> None:
         context.close()
         proc.terminate()
         proc.wait(timeout=5)
@@ -414,7 +414,7 @@ def jupyter_lab(
     )
     context = browser.new_context()
 
-    def teardown():
+    def teardown() -> None:
         context.close()
         proc.terminate()
         proc.wait(timeout=5)
