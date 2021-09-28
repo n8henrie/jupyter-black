@@ -30,14 +30,17 @@ clean-test:
 lint:
 	./.venv/bin/python -m tox -e lint
 
+.PHONY: kill-zombies
+kill-zombies:
+	-pkill -f 'jupyter-black/.venv/bin/python'
+	-pkill -f 'jupyter-black/.tox/py.*/bin/python'
+
 .PHONY: test
-test:
-	-pkill -f jupyter-black/.venv/bin/python
+test: kill-zombies
 	./.venv/bin/python -m pytest -s
 
 .PHONY: test-all
-test-all:
-	-pkill -f jupyter-black/.venv/bin/python
+test-all: kill-zombies
 	./.venv/bin/python -m tox --parallel
 
 .PHONY: release
