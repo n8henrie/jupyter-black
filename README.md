@@ -1,7 +1,8 @@
 # jupyter-black
 
 master: [![master branch build status](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml)
-<!-- dev: [![dev branch build status](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml/badge.svg?branch=dev)](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml) -->
+
+dev: [![dev branch build status](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml/badge.svg?branch=dev)](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml)
 
 A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code
 automatically using Black. Fork of
