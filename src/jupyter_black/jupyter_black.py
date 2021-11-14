@@ -21,7 +21,7 @@ class BlackFormatter:
     def __init__(
         self,
         ip: Ipt,
-        is_lab: bool = False,
+        is_lab: bool = True,
         black_config: t.Optional[t.Dict[str, str]] = None,
     ) -> None:
         """Initialize the class with the passed in config.
@@ -165,7 +165,7 @@ def load_ipython_extension(
 
 def load(
     ip: t.Optional[Ipt] = None,
-    lab: bool = False,
+    lab: bool = True,
     line_length: t.Optional[int] = None,
     target_version: t.Optional[black.TargetVersion] = None,
     verbosity: t.Union[int, str] = logging.INFO,
