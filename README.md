@@ -83,9 +83,11 @@ jupyter_black.load(
 
 This will load the extension using your defaults from `pyproject.toml` if
 available, or use the `black` defaults. Please note that this defaults to
-`lab=False` and so will only work in a notebook. For now, lab users need to
-use the recommended (configurable) loading approach above (though I may
-change the default at some point).
+`lab=True`, since moving to lab instead of standalone notebook installations
+seems to be the direction of the jupyter project; this means this method of
+loading will only work in JupyterLab, not in a standard notebook. For now,
+users running a standalone notebook (instead of lab) need to use the
+recommended (configurable) loading approach above.
 
 ### Development Setup
 
