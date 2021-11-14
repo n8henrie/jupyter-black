@@ -21,7 +21,7 @@ class BlackFormatter:
     def __init__(
         self,
         ip: Ipt,
-        is_lab: bool = False,
+        is_lab: bool = True,
         black_config: t.Optional[t.Dict[str, str]] = None,
     ) -> None:
         """Initialize the class with the passed in config.
@@ -65,7 +65,23 @@ class BlackFormatter:
         self.mode = mode
 
         self.is_lab = is_lab
-        if not is_lab:
+        if is_lab:
+            js_func = """
+                <script type="application/javascript" id="jupyter_black">
+                (function() {
+                    if (window.IPython === undefined) {
+                        return
+                    }
+                    var msg = "WARNING: it looks like you might have loaded " +
+                        "jupyter_black in a non-lab notebook with " +
+                        "`is_lab=True`. Please double check, and if " +
+                        "loading with `%load_ext` please review the README!"
+                    console.log(msg)
+                    alert(msg)
+                })()
+                </script>
+                """
+        else:
             js_func = """
                 <script type="application/javascript" id="jupyter_black">
                 function jb_set_cell(
@@ -80,11 +96,11 @@ class BlackFormatter:
                 }
                 </script>
                 """
-            display(
-                HTML(js_func),
-                display_id="jupyter_black",
-                update=False,
-            )
+        display(
+            HTML(js_func),
+            display_id="jupyter_black",
+            update=False,
+        )
 
     @staticmethod
     def _config_from_pyproject_toml() -> t.Dict[str, t.Any]:
@@ -165,7 +181,7 @@ def load_ipython_extension(
 
 def load(
     ip: t.Optional[Ipt] = None,
-    lab: bool = False,
+    lab: bool = True,
     line_length: t.Optional[int] = None,
     target_version: t.Optional[black.TargetVersion] = None,
     verbosity: t.Union[int, str] = logging.INFO,
