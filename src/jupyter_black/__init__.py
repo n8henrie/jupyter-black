@@ -6,11 +6,15 @@ __email__ = "nate@n8henrie.com"
 from .jupyter_black import (
     load,
     load_ipython_extension,
+    reload,
+    unload,
     unload_ipython_extension,
 )
 
 __all__ = [
     "load",
     "load_ipython_extension",
+    "unload",
     "unload_ipython_extension",
+    "reload",
 ]

@@ -31,8 +31,13 @@ def test_load(notebook: t.Callable) -> None:
     assert fix_quotes_with_magic[-1] == 'print("foo")'
 
 
-def test_load_ext(notebook: t.Callable) -> None:
-    """Test loading with %load_ext magic."""
+def test_notebook_loadext_fails(notebook: t.Callable) -> None:
+    """Loading with %load_ext magic fails in notebook.
+
+    Currently the default is `jupyter_black.load(lab=True)`. When loading by
+    `%load_ext`, one cannot specify any configuration, so it should fail to
+    blacken the cells if loaded this way in notebook.
+    """
     cells = [
         {
             "source": ["%load_ext jupyter_black"],
@@ -48,10 +53,10 @@ def test_load_ext(notebook: t.Callable) -> None:
     ]
     output = notebook(cells)
     fix_quotes = source_from_cell(output, "singlequotes")
-    assert fix_quotes[-1] == 'print("foo")'
+    assert fix_quotes[-1] == "print('foo')"
 
     fix_quotes_with_magic = source_from_cell(output, "magic_singlequotes")
-    assert fix_quotes_with_magic[-1] == 'print("foo")'
+    assert fix_quotes_with_magic[-1] == "print('foo')"
 
 
 def test_empty_cell(notebook: t.Callable) -> None:

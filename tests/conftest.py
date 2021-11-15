@@ -186,6 +186,7 @@ def _notebook(
     nb: Path,
 ) -> t.Dict[str, t.Any]:
     page = context.new_page()
+    page.set_default_timeout(600 * 1000)
 
     notebook_content = _base_notebook()
     cells = t.cast(t.List, notebook_content["cells"])
