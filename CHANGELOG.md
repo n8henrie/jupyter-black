@@ -1,5 +1,14 @@
 # [Changelog](https://keepachangelog.com)
 
+## 0.3.0 :: 2022-03-06
+
+- Default to `lab=True`
+    - Add warning popup for users that load in notebook with `lab=True`
+      (including via `%load_ext`)
+    - Fix tests for the above
+    - Might as well minor version bump since this changes the API, even if
+      still `0.x`
+
 ## 0.2.1 :: 20220-03-04
 
 - Python 3.10 support

@@ -14,10 +14,9 @@ import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
 from _pytest.fixtures import SubRequest
+from playwright.sync_api import Browser, BrowserContext, Dialog
+from playwright.sync_api import Error as PWError
 from playwright.sync_api import (
-    Browser,
-    BrowserContext,
-    Error,
     Response,
     sync_playwright,
     TimeoutError,
@@ -206,6 +205,17 @@ def _notebook(
     run_menu = "#celllink"
     run_all_button = "text=Run All"
 
+    # This will raise a TimeoutError when the alert is presented, since the
+    # `wait_for_selector` will never happen. Raising our own error here doesn't
+    # work due to https://github.com/microsoft/playwright-python/issues/1017
+    def close_on_dialog(dialog: Dialog) -> None:
+        if dialog.message.startswith("WARNING:"):
+            page.close()
+        else:
+            dialog.dismiss()
+
+    page.on("dialog", close_on_dialog)
+
     page.click(run_menu)
     page.click(run_all_button)
     page.wait_for_selector(f"text=[{expected_count}]:", strict=True)
@@ -318,7 +328,7 @@ def _wait_for_server(browser: Browser, port: int) -> None:
                 page.goto(f"http://localhost:{port}/api")
         except TimeoutError:
             continue
-        except Error as e:
+        except PWError as e:
             err = e
             if not e.message.startswith("NS_ERROR_CONNECTION_REFUSED"):
                 raise

@@ -1,5 +1,5 @@
 """Reexport used modules, main code will be in `jupyter_black.py`."""
-__version__ = "v0.2.1"
+__version__ = "v0.3.0"
 __author__ = "Nathan Henrie"
 __email__ = "nate@n8henrie.com"
 
