@@ -1,5 +1,10 @@
 # [Changelog](https://keepachangelog.com)
 
+## 0.3.1 :: 2022-03-08
+
+- Fix description (thanks: @bryanwweber)
+- Version bump for PyPI
+
 ## 0.3.0 :: 2022-03-06
 
 - Default to `lab=True`
