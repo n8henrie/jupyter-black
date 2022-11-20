@@ -1,5 +1,10 @@
 # [Changelog](https://keepachangelog.com)
 
+## 0.3.2, 0.3.3 :: 2022-11-20
+
+- Remove version constraints (thanks: @JakobGM, https://github.com/n8henrie/jupyter-black/issues/6)
+- Update CI to ensure publishing should work
+
 ## 0.3.1 :: 2022-03-08
 
 - Fix description (thanks: @bryanwweber)
