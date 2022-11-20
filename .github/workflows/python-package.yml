@@ -37,4 +37,4 @@ jobs:
         run: python -m tox -e py
       - if: "matrix.python-version == '3.11'"
         name: Lint and test dist
-        run: python -m tox --parallel -e lint,publish
+        run: python -m tox -e lint,publish
