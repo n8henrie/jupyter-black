@@ -68,7 +68,6 @@ test = [
 ]
 dev = [
     "build >= 0.6.0.post1",
-    "twine >= 3.4.2",
+    "twine >= 4.0.1",
     "wheel >= 0.37.0",
 ]
-
