@@ -17,7 +17,7 @@ zip-safe = false
 
 [tool.setuptools.dynamic]
 version = {attr = "jupyter_black.__version__"}
-readme = {file = ["README.md", "CHANGELOG.md"]}
+readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
 
 [tool.mypy]
 check_untyped_defs = true
