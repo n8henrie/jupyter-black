@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>65", "setuptools_scm[toml]>=7"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
@@ -11,3 +11,63 @@ profile = "black"
 multi_line_output = 3
 order_by_type = false
 line_length = 79
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = {attr = "jupyter_black.__version__"}
+readme = {file = ["README.md", "CHANGELOG.md"]}
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+follow_imports = "silent"
+ignore_missing_imports = true
+python_version = "3.10"
+show_column_numbers = true
+warn_incomplete_stub = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[project]
+name = "jupyter-black"
+urls = {homepage = "https://github.com/n8henrie/jupyter-black"}
+dynamic = ["version", "readme"]
+license = { text = "MIT" }
+description = "A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code automatically using Black. Fork of dnanhkhoa/nb_black."
+authors = [ {name = "Nathan Henrie", email = "nate@n8henrie.com"} ]
+keywords = [ "jupyter-black", ]
+classifiers= [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "black >= 21.9b0",
+    "ipython >= 7.27.0",
+    "tokenize_rt >= 4.1.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "flake8 >= 3.9.2",
+    "flake8-docstrings >= 1.6.0",
+    "flake8-import-order >= 0.18.1",
+    "jupyterlab == 3.3.0",
+    "mypy >= 0.910",
+    "pep8-naming >= 0.12.1",
+    "playwright >= 1.14.1",
+    "pylint >= 2.10.2",
+    "pytest >= 6.2.5",
+    "tox >= 3.24.3",
+]
+dev = [
+    "build >= 0.6.0.post1",
+    "twine >= 3.4.2",
+    "wheel >= 0.37.0",
+]
+
