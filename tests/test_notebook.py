@@ -100,10 +100,10 @@ def test_bad_config() -> None:
     Black options from pyproject.toml should be filtered out if not valid
     black.Mode options.
     """
-
     mock = MagicMock(return_value="tests/pyproject.toml")
     with patch("black.find_pyproject_toml", mock):
         try:
-            BlackFormatter(None)  # type: ignore
+            formatter = BlackFormatter(None)  # type: ignore
         except TypeError as e:
             pytest.fail(f"Failed to instantiate formatter: {e}")
+    assert formatter.mode.line_length == 42

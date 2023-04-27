@@ -1,2 +1,3 @@
 [tool.black]
 foo = "bar"
+line-length = 42
