@@ -34,7 +34,14 @@ jobs:
       - name: Install tox
         run: python -m pip install tox
       - name: Run tox
-        run: python -m tox -e py
+        run: |
+          # The testing has intermittent and hard to debug failures related to
+          # the playwright setup and not necessarily the code. This hack
+          # hopefully decreases the frequency with which I have to manually
+          # rerun CI.
+          for _ in {1..5}; do
+            python -m tox -e py && break
+          done
       - if: "matrix.python-version == '3.11'"
         name: Lint and test dist
         run: python -m tox -e lint,publish
