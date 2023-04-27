@@ -49,18 +49,18 @@ class BlackFormatter:
         if black_config is None:
             black_config = {}
 
-        config = self._config_from_pyproject_toml()
+        mode_config = self._mode_config_from_pyproject_toml()
 
-        tv = config.pop("target_version", None)
+        tv = mode_config.pop("target_version", None)
         if tv is not None:
             versions = {black.TargetVersion[ver.upper()] for ver in tv}
-            config.update({"target_versions": versions})
+            mode_config.update({"target_versions": versions})
 
         # Override with passed-in config
-        config.update(black_config)
+        mode_config.update(black_config)
 
-        LOGGER.debug(f"config: {config}")
-        mode = black.Mode(**config)
+        LOGGER.debug(f"config: {mode_config}")
+        mode = black.Mode(**mode_config)
         mode.is_ipynb = True
         self.mode = mode
 
@@ -103,12 +103,16 @@ class BlackFormatter:
         )
 
     @staticmethod
-    def _config_from_pyproject_toml() -> t.Dict[str, t.Any]:
+    def _mode_config_from_pyproject_toml() -> t.Dict[str, t.Any]:
+        """Return valid options for black.Mode from pyproject.toml."""
         toml_config = black.find_pyproject_toml((".",))
-        if toml_config:
-            LOGGER.debug(f"Using config from {toml_config}")
-            return black.parse_pyproject_toml(toml_config)
-        return {}
+        if not toml_config:
+            return {}
+
+        LOGGER.debug(f"Using config from {toml_config}")
+        config = black.parse_pyproject_toml(toml_config)
+        valid_options = set(t.get_type_hints(black.Mode))
+        return {k: v for k, v in config.items() if k in valid_options}
 
     def _set_cell(self, cell_content: str) -> None:
         if self.is_lab:
