@@ -62,7 +62,6 @@ test = [
     "mypy >= 0.910",
     "pep8-naming >= 0.12.1",
     "playwright >= 1.14.1",
-    "pylint >= 2.10.2",
     "pytest >= 6.2.5",
     "tox >= 3.24.3",
 ]
