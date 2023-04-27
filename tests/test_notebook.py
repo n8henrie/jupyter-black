@@ -1,6 +1,7 @@
 """Tests for jupyter_black running in jupyter notebook."""
 
 import typing as t
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -100,7 +101,7 @@ def test_bad_config() -> None:
     Black options from pyproject.toml should be filtered out if not valid
     black.Mode options.
     """
-    mock = MagicMock(return_value="tests/pyproject.toml")
+    mock = MagicMock(return_value=f"{Path(__file__).parent}/pyproject.toml")
     with patch("black.find_pyproject_toml", mock):
         try:
             formatter = BlackFormatter(None)  # type: ignore
