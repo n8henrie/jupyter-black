@@ -1,10 +1,13 @@
 """Tests for jupyter_black running in jupyter notebook."""
 
 import typing as t
+from unittest.mock import MagicMock, patch
 
 import pytest
 from conftest import source_from_cell
 from playwright.sync_api import Error as PWError
+
+from jupyter_black.jupyter_black import BlackFormatter
 
 
 def test_load(notebook: t.Callable) -> None:
@@ -89,3 +92,18 @@ def test_empty_cell(notebook: t.Callable) -> None:
 
     fix_quotes_with_magic = source_from_cell(output, "magic_singlequotes")
     assert fix_quotes_with_magic[-1] == 'print("foo")'
+
+
+def test_bad_config() -> None:
+    """Ensure only black.Mode options are passed to black.Mode.
+
+    Black options from pyproject.toml should be filtered out if not valid
+    black.Mode options.
+    """
+
+    mock = MagicMock(return_value="tests/pyproject.toml")
+    with patch("black.find_pyproject_toml", mock):
+        try:
+            BlackFormatter(None)  # type: ignore
+        except TypeError as e:
+            pytest.fail(f"Failed to instantiate formatter: {e}")
