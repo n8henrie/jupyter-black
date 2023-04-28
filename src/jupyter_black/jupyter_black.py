@@ -5,8 +5,9 @@ import typing as t
 
 import black
 from IPython.core import getipython
+from IPython.core.display import HTML, Javascript
 from IPython.core.interactiveshell import ExecutionInfo
-from IPython.display import display, HTML, Javascript
+from IPython.display import display
 from IPython.terminal.interactiveshell import TerminalInteractiveShell as Ipt
 
 logging.basicConfig()
@@ -59,7 +60,7 @@ class BlackFormatter:
         # Override with passed-in config
         mode_config.update(black_config)
 
-        LOGGER.debug(f"config: {mode_config}")
+        LOGGER.debug("config: %s", mode_config)
         mode = black.Mode(**mode_config)
         mode.is_ipynb = True
         self.mode = mode
@@ -97,7 +98,7 @@ class BlackFormatter:
                 </script>
                 """
         display(
-            HTML(js_func),
+            HTML(js_func),  # type: ignore
             display_id="jupyter_black",
             update=False,
         )
@@ -109,7 +110,7 @@ class BlackFormatter:
         if not toml_config:
             return {}
 
-        LOGGER.debug(f"Using config from {toml_config}")
+        LOGGER.debug("Using config from %s", toml_config)
         config = black.parse_pyproject_toml(toml_config)
         valid_options = set(t.get_type_hints(black.Mode))
         return {k: v for k, v in config.items() if k in valid_options}
@@ -123,8 +124,10 @@ class BlackFormatter:
                 jb_set_cell({json.dumps(cell_content)})
             }})();
             """
-            display(
-                Javascript(js_code), display_id="jupyter_black", update=True
+            display(  # type: ignore
+                Javascript(js_code),  # type: ignore
+                display_id="jupyter_black",
+                update=True,
             )
 
     def _format_cell(self, cell_info: ExecutionInfo) -> None:
@@ -169,7 +172,7 @@ def _test_is_lab() -> None:
         console.log("I ran from javascrIpt");
     })();
     """
-    display(Javascript(js_code))
+    display(Javascript(js_code))  # type: ignore
     print("I ran from python")
 
 
@@ -209,7 +212,7 @@ def load(
     LOGGER.setLevel(verbosity)
 
     if not ip:
-        ip = getipython.get_ipython()
+        ip = getipython.get_ipython()  # type: ignore
     if not ip:
         return
 
@@ -220,7 +223,7 @@ def load(
 
     if formatter is None:
         formatter = BlackFormatter(ip, is_lab=lab, black_config=black_config)
-    ip.events.register("pre_run_cell", formatter._format_cell)
+    ip.events.register("pre_run_cell", formatter._format_cell)  # type: ignore
 
 
 def unload_ipython_extension(ip: Ipt) -> None:
@@ -230,5 +233,7 @@ def unload_ipython_extension(ip: Ipt) -> None:
     """
     global formatter
     if formatter:
-        ip.events.unregister("pre_run_cell", formatter._format_cell)
+        ip.events.unregister(  # type: ignore
+            "pre_run_cell", formatter._format_cell
+        )
         formatter = None
