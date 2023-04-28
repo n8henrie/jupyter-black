@@ -48,25 +48,26 @@ classifiers= [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "black >= 21.9b0",
-    "ipython >= 7.27.0",
-    "tokenize_rt >= 4.1.0",
+    "black >= 21",
+    "ipython >= 7",
+    "tokenize_rt >= 4",
 ]
 
 [project.optional-dependencies]
 test = [
-    "flake8 >= 3.9.2",
-    "flake8-docstrings >= 1.6.0",
-    "flake8-import-order >= 0.18.1",
-    "jupyterlab == 3.3.0",
-    "mypy >= 0.910",
-    "pep8-naming >= 0.12.1",
-    "playwright >= 1.14.1",
-    "pytest >= 6.2.5",
-    "tox >= 3.24.3",
+    "flake8 == 3.9.2",
+    "flake8-docstrings == 1.6.0",
+    "flake8-import-order == 0.18.1",
+    "isort == 5.12.0",
+    "jupyterlab == 3.6.3",
+    "mypy == 1.2.0",
+    "pep8-naming == 0.12.1",
+    "playwright == 1.14.1",
+    "pytest == 7.3.1",
+    "tox == 4.5.1",
 ]
 dev = [
-    "build >= 0.6.0.post1",
-    "twine >= 4.0.1",
-    "wheel >= 0.37.0",
+    "build == 0.9.0",
+    "twine == 4.0.1",
+    "wheel == 0.37.0",
 ]
