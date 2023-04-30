@@ -35,7 +35,7 @@ jobs:
       - name: Install tox
         run: python -m pip install tox
       - name: Run tox
-      - if: "matrix.python-version == '3.11'"
         run: python -m tox -e py
+      - if: "${{ matrix.python-version == matrix.python-version[-1] }}"
         name: Lint and test dist
         run: python -m tox -e lint,publish
