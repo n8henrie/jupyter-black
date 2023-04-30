@@ -23,7 +23,7 @@ jobs:
               "3.10"
               "3.11"
             )
-        run: echo "::set-output name=matrix::${{ toJson(env.python-versions) }}"
+        run: echo "::set-output name=matrix::${{ toJson(join(env.python-versions)) }}"
 
   build:
     needs: set-matrix
