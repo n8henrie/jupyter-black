@@ -49,6 +49,6 @@ jobs:
         run: python -m pip install tox
       - name: Run tox
         run: python -m tox -e py
-      - if: "${{ matrix.python-version == jobs.build.strategy.matrix.python-version[-1] }}"
+      - if: "${{ matrix.python-version == '' }}"
         name: Lint and test dist
         run: python -m tox -e lint,publish
