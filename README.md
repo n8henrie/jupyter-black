@@ -135,11 +135,6 @@ Please see `CONTRIBUTING.md` and `TODO`.
         - pip install git+git://github.com/n8henrie/jupyter-black.git@aabc123def456ghi789
 
 
-[black]: https://github.com/psf/black
-[jupyter]: https://jupyter.org/
-[playwright]: https://playwright.dev/python/
-
-
 ## Acknowledgements
 
 Many thanks to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black) for
@@ -158,3 +153,7 @@ does things the *right* way by installing as an `nbextension`.
 ## Buy Me a Coffee
 
 [☕️](https://n8henrie.com/donate)
+
+[black]: https://github.com/psf/black
+[jupyter]: https://jupyter.org/
+[playwright]: https://playwright.dev/python/
