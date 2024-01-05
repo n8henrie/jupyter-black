@@ -33,8 +33,8 @@ your `jupyter`.
 
 ## Dependencies
 
-- Python >= 3.7
-- See `setup.cfg`
+- A stable and not end-of-life python version: <https://devguide.python.org/versions/>
+- See `pyproject.toml`
 
 ## Quickstart
 
