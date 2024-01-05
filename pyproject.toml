@@ -60,12 +60,12 @@ test = [
     "flake8-docstrings == 1.6.0",
     "flake8-import-order == 0.18.1",
     "isort == 5.11.5",
-    "jupyterlab == 3.6.3",
     "mypy == 1.2.0",
     "pep8-naming == 0.12.1",
     "playwright == 1.14.1",
     "pytest == 7.3.1",
     "tox == 4.5.1",
+    "jupyterlab==4.0.10",
 ]
 dev = [
     "build == 0.9.0",
