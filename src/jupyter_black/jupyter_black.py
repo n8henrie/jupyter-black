@@ -75,9 +75,6 @@ class BlackFormatter:
         valid_options = set(t.get_type_hints(black.Mode))
         return {k: v for k, v in config.items() if k in valid_options}
 
-    def _set_cell(self, cell_content: str) -> None:
-        self.shell.set_next_input(cell_content, replace=True)
-
     def _format_cell(self, cell_info: ExecutionInfo) -> None:
         cell_content = str(cell_info.raw_cell)
 
@@ -93,7 +90,7 @@ class BlackFormatter:
             LOGGER.debug(e)
             return
 
-        self._set_cell(formatted_code)
+        self.shell.set_next_input(formatted_code, replace=True)
 
 
 def load_ipython_extension(
