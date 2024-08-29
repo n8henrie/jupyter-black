@@ -48,8 +48,6 @@ classifiers= [
 ]
 dependencies = [
     "black >= 21",
-    "ipython >= 7",
-    "tokenize_rt >= 4",
 ]
 
 [project.optional-dependencies]
