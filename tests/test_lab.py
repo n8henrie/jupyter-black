@@ -12,7 +12,7 @@ def test_lab(lab: t.Callable) -> None:
             "source": ["import jupyter_black"],
         },
         {
-            "source": ["jupyter_black.load(line_length=79, lab=True)"],
+            "source": ["jupyter_black.load(line_length=79)"],
         },
         {
             "id": "singlequotes",

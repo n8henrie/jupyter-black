@@ -25,6 +25,52 @@ from playwright.sync_api import (
 from pytest import TempPathFactory
 
 
+def decode_event(data: t.Union[bytes | str]) -> t.Dict:
+    """Decode an event of bytes into a dictionary.
+
+    Previously a simple `json.loads` was fine, but it appears that jupyterlab
+    4.0 has changed things and now there is a hash prefixed to ensure integrity
+    of the message. Instead of going through the trouble of properly decoding
+    (I think the process is described in the document below as of 20240107),
+    because this is only necessary as a sign that the kernel is ready to run
+    the tests, we'll take a few shortcuts.
+
+    Additionally, previously the decoded data was a single dict with multiple
+    layers, whereas the new protocol has 4 separate objects; this function
+    combines then in such a way as to retain compatibility.
+
+    Feel free to contribute a better process if you have one.
+
+    https://jupyter-client.readthedocs.io/en/latest/messaging.html#the-wire-protocol
+
+    An example message, which hopefully isn't revealing all my credit card
+    information:
+
+    ```
+    b'\x06\x00\x00\x00\x00\x00\x00\x008\x00\x00\x00\x00\x00\x00\x00=\x00\x00\x00\x00\x00\x00\x00\x0b\x01\x00\x00\x00\x00\x00\x00\xec\x01\x00\x00\x00\x00\x00\x00\xee\x01\x00\x00\x00\x00\x00\x00\t\x02\x00\x00\x00\x00\x00\x00iopub{"msg_id": "9148ee59-f8f0f2fd901f7456b0940f74_75282_8", "msg_type": "status", "username": "n8henrie", "session": "9148ee59-f8f0f2fd901f7456b0940f74", "date": "2024-01-07T17:07:26.528988Z", "version": "5.3"}{"msg_id": "cd68eda6-6b55-408f-83c6-57c104d2bab6_75204_1", "msg_type": "kernel_info_request", "username": "n8henrie", "session": "cd68eda6-6b55-408f-83c6-57c104d2bab6", "date": "2024-01-07T17:07:26.525729Z", "version": "5.3"}{}{"execution_state": "idle"}'
+    ```
+    """
+
+    if isinstance(data, str):
+        return json.loads(data)
+
+    event_start = data.find(b'{"')
+    trimmed = data[event_start:]
+
+    decoder = json.JSONDecoder()
+
+    dicts = []
+    chunk = trimmed.decode("utf8")
+    while chunk:
+        dict_, chunk_start = decoder.raw_decode(chunk)
+        dicts.append(dict_)
+        chunk = chunk[chunk_start:]
+
+    (header, parent, metadata, content) = dicts
+    header["content"] = content
+    return header
+
+
 def _base_notebook() -> t.Dict:
     return {
         "cells": [],
@@ -74,13 +120,13 @@ def make_cell(cell: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
     return full_cell
 
 
-def all_cells_run(event_str: str, expected_count: int) -> bool:
-    """Wait for an event signalling all cells have run.
+def all_cells_run(data: t.Union[bytes, str], expected_count: int) -> bool:
+    """Wait for an event signaling all cells have run.
 
     `execution_count` should equal number of nonempty cells.
     """
+    event = decode_event(data)
     try:
-        event = json.loads(event_str)
         msg_type = event["msg_type"]
         content = event["content"]
         execution_count = content["execution_count"]
@@ -135,14 +181,14 @@ def is_saved(response: Response, name: str, port: int) -> bool:
     return False
 
 
-def kernel_ready_event(event_str: str) -> bool:
-    """Wait for an event signalling the kernel is ready to run cell.
+def kernel_ready_event(data: t.Union[bytes, str]) -> bool:
+    """Wait for an event signaling the kernel is ready to run cell.
 
     Seems like `comm_info_reply` is a reasonable target for `jupyter notebook`
     whereas `kernel_info_reply` works for `jupyter server`.
     """
+    event = decode_event(data)
     try:
-        event = json.loads(event_str)
         msg_type = event["msg_type"]
         content = event["content"]
         status = content["status"]
@@ -202,9 +248,6 @@ def _notebook(
     # Blank cells do not increment execution_count
     expected_count = sum(1 for cell in cells if cell["source"])
 
-    run_menu = "#celllink"
-    run_all_button = "text=Run All"
-
     # This will raise a TimeoutError when the alert is presented, since the
     # `wait_for_selector` will never happen. Raising our own error here doesn't
     # work due to https://github.com/microsoft/playwright-python/issues/1017
@@ -216,21 +259,19 @@ def _notebook(
 
     page.on("dialog", close_on_dialog)
 
-    page.click(run_menu)
-    page.click(run_all_button)
+    page.click("text=Run")
+    page.locator("#jp-mainmenu-run").get_by_text(
+        "Run All Cells", exact=True
+    ).click()
     page.wait_for_selector(f"text=[{expected_count}]:", strict=True)
 
     with page.expect_response(lambda resp: is_saved(resp, name, port)) as resp:
-        page.click('button[title="Save and Checkpoint"]')
+        page.get_by_text("File", exact=True).click()
+        page.get_by_text("Save All").click()
 
-    kernel_menu = "#kernellink"
-    kernel_shutdown_button = "text=Shutdown"
-    real_shutdown_button = 'button:has-text("Shutdown")'
-
-    page.click(kernel_menu)
-    page.click(kernel_shutdown_button)
+    page.get_by_text("Kernel", exact=True).click()
     with page.expect_response(lambda resp: is_closing(resp, port)) as resp:
-        page.click(real_shutdown_button)
+        page.get_by_text("Shut Down Kernel").click()
 
     resp.value.finished()
     return json.loads(nb.read_text())
@@ -275,16 +316,23 @@ def _lab(
     # Blank cells do not increment execution_count
     expected_count = sum(1 for cell in cells if cell["source"])
 
-    run_menu = "text=Run"
-    run_all_button = 'ul[role="menu"] >> text=Run All Cells'
+    page.click("text=Run")
 
-    page.click(run_menu)
-    page.click(run_all_button)
+    for run_menu in [
+        'ul[role="menu"]',
+        "#jp-mainmenu-run",  # jupyterlab 4
+    ]:
+        run_all_button = page.locator(run_menu).get_by_text(
+            "Run All Cells", exact=True
+        )
+        if run_all_button.count() == 1:
+            run_all_button.click()
+
     page.wait_for_selector(f"text=[{expected_count}]:", strict=True)
 
     with page.expect_response(lambda resp: is_saved(resp, name, port)) as resp:
-        page.click("text=File")
-        page.click('ul[role="menu"] >> text=Save Notebook')
+        page.get_by_text("File", exact=True).click()
+        page.get_by_text("Save All").click()
 
     kernel_menu = "text=Kernel"
     shutdown_button = "text=Shut Down Kernel"
