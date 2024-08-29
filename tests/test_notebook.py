@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from conftest import source_from_cell
-from playwright.sync_api import Error as PWError
 
 from jupyter_black.jupyter_black import BlackFormatter
 
