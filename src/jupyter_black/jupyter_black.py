@@ -1,4 +1,5 @@
 """Beautify jupyter cells using black."""
+
 import json
 import logging
 import typing as t
@@ -61,7 +62,6 @@ class BlackFormatter:
         mode = black.Mode(**mode_config)
         mode.is_ipynb = True
         self.mode = mode
-
 
     @staticmethod
     def _mode_config_from_pyproject_toml() -> t.Dict[str, t.Any]:
