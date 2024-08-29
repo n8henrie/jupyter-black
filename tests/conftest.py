@@ -134,13 +134,11 @@ def all_cells_run(data: t.Union[bytes, str], expected_count: int) -> bool:
     except (TypeError, KeyError):
         return False
 
-    return all(
-        (
-            msg_type == "execute_reply",
-            execution_count == expected_count,
-            status == "ok",
-        )
-    )
+    return all((
+        msg_type == "execute_reply",
+        execution_count == expected_count,
+        status == "ok",
+    ))
 
 
 def is_closing(response: Response, port: int) -> bool:
@@ -149,13 +147,11 @@ def is_closing(response: Response, port: int) -> bool:
     method = response.request.method
     status_text = response.status_text
 
-    if all(
-        (
-            response.url.startswith(expected_url),
-            method == "DELETE",
-            status_text == "No Content",
-        )
-    ):
+    if all((
+        response.url.startswith(expected_url),
+        method == "DELETE",
+        status_text == "No Content",
+    )):
         response.finished()
         return True
     return False
@@ -166,16 +162,14 @@ def is_saved(response: Response, name: str, port: int) -> bool:
     expected_url = f"http://localhost:{port}/api/contents/{name}"
     method = response.request.method
     try:
-        t = response.json().get("type")
+        response_type = response.json().get("type")
     except AttributeError:
         return False
-    if all(
-        (
-            response.url.startswith(expected_url),
-            t == "notebook",
-            method == "PUT",
-        )
-    ):
+    if all((
+        response.url.startswith(expected_url),
+        response_type == "notebook",
+        method == "PUT",
+    )):
         response.finished()
         return True
     return False
@@ -195,12 +189,10 @@ def kernel_ready_event(data: t.Union[bytes, str]) -> bool:
     except (TypeError, KeyError):
         return False
 
-    return all(
-        (
-            msg_type == "kernel_info_reply",
-            status == "ok",
-        )
-    )
+    return all((
+        msg_type == "kernel_info_reply",
+        status == "ok",
+    ))
 
 
 def kernel_ready(ws: WebSocket) -> bool:
@@ -406,20 +398,18 @@ def jupyter_server(
     port = open_port
     tmp = tmp_path_factory.getbasetemp()
     os.chdir(tmp)
-    proc = subprocess.Popen(
-        [
-            sys.executable,
-            "-m",
-            "jupyter",
-            "server",
-            "--ServerApp.config_file=/dev/null",
-            f"--ServerApp.port={port}",
-            "--ServerApp.port_retries=0",
-            "--ServerApp.token=''",
-            "--ServerApp.password=''",
-            "--no-browser",
-        ]
-    )
+    proc = subprocess.Popen([
+        sys.executable,
+        "-m",
+        "jupyter",
+        "server",
+        "--ServerApp.config_file=/dev/null",
+        f"--ServerApp.port={port}",
+        "--ServerApp.port_retries=0",
+        "--ServerApp.token=''",
+        "--ServerApp.password=''",
+        "--no-browser",
+    ])
     context = browser.new_context()
 
     def teardown() -> None:
@@ -456,20 +446,18 @@ def jupyter_lab(
     port = open_port
     tmp = tmp_path_factory.getbasetemp()
     os.chdir(tmp)
-    proc = subprocess.Popen(
-        [
-            sys.executable,
-            "-m",
-            "jupyter",
-            "lab",
-            "--ServerApp.config_file=/dev/null",
-            f"--ServerApp.port={port}",
-            "--ServerApp.port_retries=0",
-            "--ServerApp.token=''",
-            "--ServerApp.password=''",
-            "--no-browser",
-        ]
-    )
+    proc = subprocess.Popen([
+        sys.executable,
+        "-m",
+        "jupyter",
+        "lab",
+        "--ServerApp.config_file=/dev/null",
+        f"--ServerApp.port={port}",
+        "--ServerApp.port_retries=0",
+        "--ServerApp.token=''",
+        "--ServerApp.password=''",
+        "--no-browser",
+    ])
     context = browser.new_context()
 
     def teardown() -> None:
