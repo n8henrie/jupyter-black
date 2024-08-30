@@ -1,14 +1,11 @@
 """Beautify jupyter cells using black."""
 
-import json
 import logging
 import typing as t
 
 import black
 from IPython.core import getipython
-from IPython.core.display import HTML, Javascript
 from IPython.core.interactiveshell import ExecutionInfo
-from IPython.display import display
 from IPython.terminal.interactiveshell import TerminalInteractiveShell as Ipt
 
 logging.basicConfig()
