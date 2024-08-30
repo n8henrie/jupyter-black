@@ -10,18 +10,26 @@ from itertools import count
 from pathlib import Path
 from uuid import uuid4
 
-import pytest
 from _pytest.config import Config
-from _pytest.config.argparsing import Parser
+from _pytest.config.argparsing import (
+    Parser,
+)
 from _pytest.fixtures import SubRequest
-from playwright.sync_api import Browser, BrowserContext, Dialog
-from playwright.sync_api import Error as PWError
+
 from playwright.sync_api import (
+    Browser,
+    BrowserContext,
+    Dialog,
     Response,
-    sync_playwright,
     TimeoutError,
     WebSocket,
+    sync_playwright,
 )
+from playwright.sync_api import (
+    Error as PWError,
+)
+
+import pytest
 from pytest import TempPathFactory
 
 
@@ -65,7 +73,12 @@ def decode_event(data: t.Union[bytes, str]) -> t.Dict:
         dicts.append(dict_)
         chunk = chunk[chunk_start:]
 
-    (header, parent, metadata, content) = dicts
+    (
+        header,
+        _parent,
+        _metadata,
+        content,
+    ) = dicts
     header["content"] = content
     return header
 
@@ -80,7 +93,10 @@ def _base_notebook() -> t.Dict:
                 "name": "python3",
             },
             "language_info": {
-                "codemirror_mode": {"name": "ipython", "version": 3},
+                "codemirror_mode": {
+                    "name": "ipython",
+                    "version": 3,
+                },
                 "file_extension": ".py",
                 "mimetype": "text/x-python",
                 "name": "python",
@@ -119,7 +135,10 @@ def make_cell(cell: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
     return full_cell
 
 
-def all_cells_run(data: t.Union[bytes, str], expected_count: int) -> bool:
+def all_cells_run(
+    data: t.Union[bytes, str],
+    expected_count: int,
+) -> bool:
     """Wait for an event signaling all cells have run.
 
     `execution_count` should equal number of nonempty cells.
@@ -160,7 +179,11 @@ def is_closing(response: Response, port: int) -> bool:
     return False
 
 
-def is_saved(response: Response, name: str, port: int) -> bool:
+def is_saved(
+    response: Response,
+    name: str,
+    port: int,
+) -> bool:
     """Wait for the response showing that saving has taken place."""
     expected_url = f"http://localhost:{port}/api/contents/{name}"
     method = response.request.method
@@ -204,7 +227,10 @@ def kernel_ready_event(data: t.Union[bytes, str]) -> bool:
 
 def kernel_ready(ws: WebSocket) -> bool:
     """Wait for the kernel_ready_event on a websocket."""
-    with ws.expect_event("framereceived", kernel_ready_event):
+    with ws.expect_event(
+        "framereceived",
+        kernel_ready_event,
+    ):
         return True
 
 
@@ -250,7 +276,9 @@ def _notebook(
     # This will raise a TimeoutError when the alert is presented, since the
     # `wait_for_selector` will never happen. Raising our own error here doesn't
     # work due to https://github.com/microsoft/playwright-python/issues/1017
-    def close_on_dialog(dialog: Dialog) -> None:
+    def close_on_dialog(
+        dialog: Dialog,
+    ) -> None:
         if dialog.message.startswith("WARNING:"):
             page.close()
         else:
@@ -262,7 +290,10 @@ def _notebook(
     page.locator("#jp-mainmenu-run").get_by_text(
         "Run All Cells", exact=True
     ).click()
-    page.wait_for_selector(f"text=[{expected_count}]:", strict=True)
+    page.wait_for_selector(
+        f"text=[{expected_count}]:",
+        strict=True,
+    )
 
     with page.expect_response(lambda resp: is_saved(resp, name, port)) as resp:
         page.get_by_text("File", exact=True).click()
@@ -327,7 +358,10 @@ def _lab(
         if run_all_button.count() == 1:
             run_all_button.click()
 
-    page.wait_for_selector(f"text=[{expected_count}]:", strict=True)
+    page.wait_for_selector(
+        f"text=[{expected_count}]:",
+        strict=True,
+    )
 
     with page.expect_response(lambda resp: is_saved(resp, name, port)) as resp:
         page.get_by_text("File", exact=True).click()
@@ -345,7 +379,9 @@ def _lab(
 
 
 @pytest.fixture(scope="session")
-def browser(headless: bool) -> t.Generator:
+def browser(
+    headless: bool,
+) -> t.Generator:
     """Provide a playwright browser for the entire session."""
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=headless)
@@ -357,9 +393,15 @@ def _wait_for_server(browser: Browser, port: int) -> None:
     # Wait for jupyter server to be ready
     while True:
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            with socket.socket(
+                socket.AF_INET,
+                socket.SOCK_STREAM,
+            ) as sock:
                 sock.connect(("localhost", port))
-        except (ConnectionRefusedError, OSError):
+        except (
+            ConnectionRefusedError,
+            OSError,
+        ):
             continue
         else:
             break
@@ -486,7 +528,10 @@ def jupyter_lab(
     return (context, tmp, port)
 
 
-def source_from_cell(content: t.Dict[str, t.Any], cell_id: str) -> str:
+def source_from_cell(
+    content: t.Dict[str, t.Any],
+    cell_id: str,
+) -> str:
     """Return cell source for a given id.
 
     Jupyter doesn't like if cell ids are not totally unique (including between
@@ -501,12 +546,19 @@ def source_from_cell(content: t.Dict[str, t.Any], cell_id: str) -> str:
     )
 
 
-def pytest_addoption(parser: Parser) -> None:
+def pytest_addoption(
+    parser: Parser,
+) -> None:
     """Add option to turn off headless (use headful) mode."""
-    parser.addoption("--no-headless", action="store_true")
+    parser.addoption(
+        "--no-headless",
+        action="store_true",
+    )
 
 
 @pytest.fixture(scope="session")
-def headless(pytestconfig: Config) -> bool:
+def headless(
+    pytestconfig: Config,
+) -> bool:
     """Get the headless option."""
     return not pytestconfig.getoption("--no-headless")

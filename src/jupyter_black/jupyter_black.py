@@ -3,10 +3,11 @@
 import logging
 import typing as t
 
-import black
 from IPython.core import getipython
 from IPython.core.interactiveshell import ExecutionInfo
 from IPython.terminal.interactiveshell import TerminalInteractiveShell as Ipt
+
+import black
 
 logging.basicConfig()
 LOGGER = logging.getLogger("jupyter_black")

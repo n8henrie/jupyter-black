@@ -4,8 +4,9 @@ import typing as t
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 from conftest import source_from_cell
+
+import pytest
 
 from jupyter_black.jupyter_black import BlackFormatter
 
