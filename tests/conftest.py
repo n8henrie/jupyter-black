@@ -26,7 +26,7 @@ from pytest import TempPathFactory
 
 
 def decode_event(data: t.Union[bytes | str]) -> t.Dict:
-    """Decode an event of bytes into a dictionary.
+    r"""Decode an event of bytes into a dictionary.
 
     Previously a simple `json.loads` was fine, but it appears that jupyterlab
     4.0 has changed things and now there is a hash prefixed to ensure integrity
@@ -47,10 +47,9 @@ def decode_event(data: t.Union[bytes | str]) -> t.Dict:
     information:
 
     ```
-    b'\x06\x00\x00\x00\x00\x00\x00\x008\x00\x00\x00\x00\x00\x00\x00=\x00\x00\x00\x00\x00\x00\x00\x0b\x01\x00\x00\x00\x00\x00\x00\xec\x01\x00\x00\x00\x00\x00\x00\xee\x01\x00\x00\x00\x00\x00\x00\t\x02\x00\x00\x00\x00\x00\x00iopub{"msg_id": "9148ee59-f8f0f2fd901f7456b0940f74_75282_8", "msg_type": "status", "username": "n8henrie", "session": "9148ee59-f8f0f2fd901f7456b0940f74", "date": "2024-01-07T17:07:26.528988Z", "version": "5.3"}{"msg_id": "cd68eda6-6b55-408f-83c6-57c104d2bab6_75204_1", "msg_type": "kernel_info_request", "username": "n8henrie", "session": "cd68eda6-6b55-408f-83c6-57c104d2bab6", "date": "2024-01-07T17:07:26.525729Z", "version": "5.3"}{}{"execution_state": "idle"}'
+    b'\x06\x00\x00\x00\x00\x00\x00\x008\x00\x00\x00\x00\x00\x00\x00=\x00\x00\x00\x00\x00\x00\x00\x0b\x01\x00\x00\x00\x00\x00\x00\xec\x01\x00\x00\x00\x00\x00\x00\xee\x01\x00\x00\x00\x00\x00\x00\t\x02\x00\x00\x00\x00\x00\x00iopub{"msg_id": "9148ee59-f8f0f2fd901f7456b0940f74_75282_8", "msg_type": "status", "username": "n8henrie", "session": "9148ee59-f8f0f2fd901f7456b0940f74", "date": "2024-01-07T17:07:26.528988Z", "version": "5.3"}{"msg_id": "cd68eda6-6b55-408f-83c6-57c104d2bab6_75204_1", "msg_type": "kernel_info_request", "username": "n8henrie", "session": "cd68eda6-6b55-408f-83c6-57c104d2bab6", "date": "2024-01-07T17:07:26.525729Z", "version": "5.3"}{}{"execution_state": "idle"}'  # noqa
     ```
     """
-
     if isinstance(data, str):
         return json.loads(data)
 
