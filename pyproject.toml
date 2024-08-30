@@ -4,12 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 79
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-order_by_type = false
-line_length = 79
 target-version = ['py38']
 
 [tool.setuptools]
@@ -55,7 +49,6 @@ test = [
     "flake8 == 7",
     "flake8-docstrings == 1.7",
     "flake8-import-order == 0.18.2",
-    "isort == 5",
     "jupyterlab >= 4",
     "mypy == 1",
     "notebook >= 7",
