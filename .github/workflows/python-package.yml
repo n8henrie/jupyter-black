@@ -8,27 +8,16 @@ name: CI
     branches: [master, dev]
 
 jobs:
-  set-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - id: set-matrix
-        env:
-          python-versions:
-            - "3.8"
-            - "3.9"
-            - "3.10"
-            - "3.11"
-            - "3.12"
-        run: echo "::set-output name=matrix::${{ toJson(env.python-versions) }}"
-
   build:
-    needs: set-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ${{fromJson(needs.set-matrix.outputs.matrix)}}
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
 
     steps:
       - uses: actions/checkout@v4
