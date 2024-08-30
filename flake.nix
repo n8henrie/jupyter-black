@@ -3,14 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/release-23.11";
+
+    # 23.11 has a sphinx issue with tox
+    # https://github.com/NixOS/nixpkgs/issues/268731
+    nixpkgs-old.url = "github:nixos/nixpkgs/release-23.05";
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      nixpkgs-stable,
+      nixpkgs-old,
     }:
     let
       systems = [
@@ -27,7 +30,7 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ (_: _: { inherit (nixpkgs-stable.legacyPackages.${system}) python38; }) ];
+          overlays = [ (_: _: { inherit (nixpkgs-old.legacyPackages.${system}) python38; }) ];
         };
         pname = "jupyter-black";
       in
