@@ -1,5 +1,14 @@
 # [Changelog](https://keepachangelog.com)
 
+## 0.4.0 :: 2024-08-30
+
+- Drop support for python 3.7
+- Remove functionality for old-style jupyter notebook
+    - Modern versions of `lab` and `notebook` both work the same way -- a much better way -- reducing the amount of code maintenance
+    - Users that are stuck on old versions of `notebook` (<7) will need to pin an older version of jupyter-black
+- Add some nix stuff
+- Update dependencies
+
 ## 0.3.4 :: 2023-04-27
 
 - Only pass to `black.Mode` options from `pyproject.toml` that are valid for
