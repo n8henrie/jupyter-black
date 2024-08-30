@@ -25,7 +25,7 @@ from playwright.sync_api import (
 from pytest import TempPathFactory
 
 
-def decode_event(data: t.Union[bytes | str]) -> t.Dict:
+def decode_event(data: t.Union[bytes, str]) -> t.Dict:
     r"""Decode an event of bytes into a dictionary.
 
     Previously a simple `json.loads` was fine, but it appears that jupyterlab
