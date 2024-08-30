@@ -58,12 +58,6 @@ for local development.
         $ git clone git@github.com:your_name_here/jupyter-black.git
         $ cd jupyter-black
 
-1. Check out the `dev` branch, where development happens prior to being merged
-   into `master`. Your changes should be based on the `dev` branch, and your PR
-   should eventually be requested against my `dev` branch.
-
-        $ git checkout dev
-
 1.  Install your local copy into a virtualenv (`venv` in modern python). Some
     linux distributions will require you to install `python-venv` or
     `python3-venv`, other times it will already be bundled with python. There
@@ -95,7 +89,7 @@ for local development.
         $ git commit -m "Your detailed description of your changes."
         $ git push origin name-of-your-bugfix-or-feature
 
-1. Submit a pull request through the GitHub website against my `dev` branch.
+1. Submit a pull request through the GitHub website against my `master` branch.
 
 ## Pull Request Guidelines
 
