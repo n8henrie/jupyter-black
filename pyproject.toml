@@ -48,7 +48,6 @@ dependencies = [
 test = [
     "flake8 == 7",
     "flake8-docstrings == 1.7",
-    "flake8-import-order == 0.18.2",
     "jupyterlab >= 4",
     "mypy == 1",
     "notebook >= 7",
