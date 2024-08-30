@@ -14,3 +14,8 @@ More info: <https://web.archive.org/web/20231127084426/https://firefox-source-do
 
 Consider using `PWDEBUG=1` (or `make test-debug`) when debugging the playwright
 test code.
+
+MSPV:
+    - 3.10
+        - Replace `t.Union` with `|`
+        - several places that match would work well
