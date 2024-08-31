@@ -31,7 +31,10 @@ your `jupyter`.
 
 ## Dependencies
 
-- Python >= 3.7
+- Python >= 3.8
+- `jupyterlab` >=4 / `notebook` >= 7
+    - older versions of `notebook` worked well until `jupyter-black` 0.4.0, but recent updates to `notebook` have done away with the old way of formatting cells
+    consider pinning to `v0.3.4` if you're stuck on an older version of `notebook`
 - See `setup.cfg`
 
 ## Quickstart
@@ -66,7 +69,6 @@ import black
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
     line_length=79,
     verbosity="DEBUG",
     target_version=black.TargetVersion.PY310,
@@ -80,12 +82,7 @@ jupyter_black.load(
 ```
 
 This will load the extension using your defaults from `pyproject.toml` if
-available, or use the `black` defaults. Please note that this defaults to
-`lab=True`, since moving to lab instead of standalone notebook installations
-seems to be the direction of the jupyter project; this means this method of
-loading will only work in JupyterLab, not in a standard notebook. For now,
-users running a standalone notebook (instead of lab) need to use the
-recommended (configurable) loading approach above.
+available, or use the `black` defaults.
 
 ### Development Setup
 
@@ -107,6 +104,7 @@ Notes:
     - `python -m playwright install --with-deps firefox`
 - `tox` will automatically run these installation steps (helpful for CI)
 - If desired, pass the `--no-headless` flag to `pytest` for local debugging
+- See also [`dev-notes.txt`]
 
 ## TODO
 
@@ -116,9 +114,6 @@ Contribution ideas:
     - Ensure config is overridden in unsurprising ways
     - Ensure other config options are properly passed to `black`
     - Ensure that `pyproject.toml` is searched for properly
-- [x] Write tests for jupyter lab, currently only tested for notebook
-    - [x] I think the fixture could easily be modularized to also work for `lab`,
-      but haven't done the work yet
 
 ## Contributing
 
