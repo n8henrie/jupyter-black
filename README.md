@@ -2,22 +2,18 @@
 
 master: [![master branch build status](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/n8henrie/jupyter-black/actions/workflows/python-package.yml)
 
-A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code
-automatically using Black. Fork of
-[dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black) with a few minor
-modifications:
+A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code automatically using Black.
+Fork of [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black) with a few minor modifications:
 
 ## Features
 
-Once loaded, automatically format syntactically correct `jupyter` cells with
-`black` once they are run.
+Once loaded, automatically format syntactically correct `jupyter` cells with `black` once they are run.
 
 Enhancements compared to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black):
 
 - Configurability:
     - Try to read black config from `pyproject.toml` if available
-    - Override settings such as line length and `black.TargetVersion` if
-      desired
+    - Override settings such as line length and `black.TargetVersion` if desired
 - Uses `black.format_cell` to greatly simplify the codebase
 - Adds tests
 - Slightly more responsive (no longer requires `setTimeout` and a delay)
@@ -25,16 +21,15 @@ Enhancements compared to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_bl
 
 ## Introduction
 
-[`black`][black] is an extremely popular python formatter. [Jupyter][jupyter] is an
-awesome way to run python. This extension helps you automatically `black`en
-your `jupyter`.
+[`black`][black] is an extremely popular python formatter. [Jupyter][jupyter] is an awesome way to run python.
+This extension helps you automatically `black`en your `jupyter`.
 
 ## Dependencies
 
 - Python >= 3.8
 - `jupyterlab` >=4 / `notebook` >= 7
     - older versions of `notebook` worked well until `jupyter-black` 0.4.0, but recent updates to `notebook` have done away with the old way of formatting cells
-    consider pinning to `v0.3.4` if you're stuck on an older version of `notebook`
+    - consider pinning to `v0.3.4` if you're stuck on an older version of `notebook`
 - See `setup.cfg`
 
 ## Quickstart
@@ -81,13 +76,11 @@ jupyter_black.load(
 %load_ext jupyter_black
 ```
 
-This will load the extension using your defaults from `pyproject.toml` if
-available, or use the `black` defaults.
+This will load the extension using your defaults from `pyproject.toml` if available, or use the `black` defaults.
 
 ### Development Setup
 
-1. Clone the repo: `git clone https://github.com/n8henrie/jupyter-black && cd
-   jupyter-black`
+1. Clone the repo: `git clone https://github.com/n8henrie/jupyter-black && cd jupyter-black`
 2. Make a virtualenv: `python3 -m venv .venv`
 3. Activate venv, update pip, and install editable test/dev version:
 
@@ -132,21 +125,16 @@ Please see `CONTRIBUTING.md` and `TODO`.
 [jupyter]: https://jupyter.org/
 [playwright]: https://playwright.dev/python/
 
-
 ## Acknowledgements
 
-Many thanks to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black) for
-the original version!
+Many thanks to [dnanhkhoa/nb_black](https://github.com/dnanhkhoa/nb_black) for the original version!
 
 And of course many thanks to the [black][black] and [jupyter][jupyter] teams.
 
-Also, after establishing the repo and reserving the name on PyPI, I noticed
-there is another library of the same name:
-[drillan/jupyter-black](https://github.com/drillan/jupyter-black). It looks
-like there have been no commits in the last 2 years, and it was never put in
-PyPI, so I think at this point I'll continue with this name. Sorry if this
-causes any trouble or confusion. I'll note that @drillan's library probably
-does things the *right* way by installing as an `nbextension`.
+Also, after establishing the repo and reserving the name on PyPI, I noticed there is another library of the same name: [drillan/jupyter-black](https://github.com/drillan/jupyter-black).
+It looks like there have been no commits in the last 2 years, and it was never put in PyPI, so I think at this point I'll continue with this name.
+Sorry if this causes any trouble or confusion.
+I'll note that @drillan's library probably does things the *right* way by installing as an `nbextension`.
 
 ## Buy Me a Coffee
 
